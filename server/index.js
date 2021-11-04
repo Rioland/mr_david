@@ -6,7 +6,7 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
-require('dotenv').config()
+require("dotenv").config();
 app.use(
   cors({
     origin: [process.env.API_URL],
@@ -14,7 +14,7 @@ app.use(
     methods: ["POST", "GET", "PUT", "DELETE"],
   })
 );
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -23,10 +23,10 @@ app.use(
     secret: process.env.SEESION_SECRETE,
     resave: true,
     saveUninitialized: false,
-    cookie: { 
-      httpOnly:true,
+    cookie: {
+      httpOnly: true,
       // secure: true ,
-      maxAge:parseInt(process.env.MAXAGE)
+      maxAge: parseInt(process.env.MAXAGE),
     },
   })
 );
@@ -35,22 +35,22 @@ dbConfig = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database:process.env.DB_NAME,
+  database: process.env.DB_NAME,
 });
 
 app.get("/", (req, res) => {
   res.send("hello api");
 });
 
-app.get("/v1/login",(req,res)=>{
-  if(req.session.token){
+app.get("/v1/login", (req, res) => {
+  if (req.session.token) {
     res.send({
       error: false,
       message: "success",
       // token: token,
-      token:req.session.token
+      token: req.session.token,
     });
-  }else{
+  } else {
     res.send({
       error: true,
       message: "not login",
@@ -72,51 +72,51 @@ app.post("/v1/register", (req, res) => {
     "INSERT INTO users (username, phone, password,name) VALUES (?,?,?,?);";
   dbConfig.query(q, [username, phone, password, name], (error, result) => {
     if (error) {
-      res.send(error);
+      res.send({
+        error: true,
+        message: error,
+      });
     } else {
-      if (result) {
-        console.log(result);
-        res.send({
-          error: false,
-          message: "success",
-        });
-      } else {
-        res.send({
-          error: true,
-          message: "something went wrong",
-        });
-      }
+      console.log(result);
+      res.send({
+        error: false,
+        message: "success",
+      });
     }
   });
 });
-
+// format bearer <token>
 const varifytoken = (req, res, next) => {
-  const token = req.header["token"];
-  if (!token) {
+  const bearerHeader = req.headers["authorization"];
+  if (typeof bearerHeader == "undefined") {
     res.send({
       error: true,
       message: "token not send",
     });
   } else {
-    jwt.verify(token, "riotechio", (err, decode) => {
-      if (err) {
-        res.send({
-          error: true,
-          message: " invalid token send",
-        });
-      }else{
-        console.log(decode);
-        req.token=decode.id;
-        next();
-
-      }
-    });
+    const bearer = bearerHeader.split(" ");
+    const token = bearer[1];
+    req.token = token;
+    next();
   }
 };
 
-app.get("/v1/user", varifytoken, (req, res) => {
-res.send()
-
+app.get("/v1/profile", varifytoken, (req, res) => {
+  jwt.verify(req.token, process.env.JWT_SECRITE, (err, tokenpayload) => {
+    if (err) {
+      res.send({
+        error: true,
+        message: err,
+      });
+    } else {
+      console.log(tokenpayload);
+      res.json({
+        error: false,
+        message: "success",
+        data: tokenpayload,
+      });
+    }
+  });
 });
 
 app.post("/v1/login", (req, res) => {
@@ -138,22 +138,57 @@ app.post("/v1/login", (req, res) => {
           message: "invalid details",
         });
       } else {
-        // console.log(result);
-        // req.session.user=result[0];
-        //  req.session.user=result[0];
-        const uid = result[0].id;
-        // for security u can use .env file to store sensitive info
-        const token = jwt.sign({ uid }, "riotechio", {
-          expiresIn: "2h",
+        //  console.log(process.env.JWT_SECRITE)
+        const user = result[0];
+        const token = jwt.sign({ user }, process.env.JWT_SECRITE, {
+          expiresIn: "3h",
         });
-        req.session.token=token;
-        res.send({
-          error: false,
-          message: "success",
-          token: token,
-          // session:req.session.user
-        });
+        if (token) {
+          req.session.token = token;
+          res.send({
+            error: false,
+            message: "success",
+            token: token,
+          });
+        } else {
+          res.json({
+            error: true,
+            message: "can not generate token",
+          });
+        }
       }
+    }
+  });
+});
+
+app.get("/v1/allusers", varifytoken, (req, res) => {
+  jwt.verify(req.token, process.env.JWT_SECRITE, (err, payload) => {
+    if (err) {
+      res.send({
+        error: true,
+        message: err,
+      });
+    } else {
+      dbConfig.query("select * from users", (err, result) => {
+        if (err) {
+          res.send({
+            error: true,
+            message: "server error",
+          });
+        } else {
+          res.send({
+            error: false,
+            message: "success",
+            data: result,
+          });
+        }
+      });
+      // console.log(payload);
+      // res.json({
+      //   error: true,
+      //   message: " invalid token send",
+      //   data:tokenpayload
+      // });
     }
   });
 });
