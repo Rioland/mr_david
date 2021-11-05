@@ -42,21 +42,21 @@ app.get("/", (req, res) => {
   res.send("hello api");
 });
 
-app.get("/v1/login", (req, res) => {
-  if (req.session.token) {
-    res.send({
-      error: false,
-      message: "success",
-      // token: token,
-      token: req.session.token,
-    });
-  } else {
-    res.send({
-      error: true,
-      message: "not login",
-    });
-  }
-});
+// app.get("/v1/login", (req, res) => {
+//   if (req.session.token) {
+//     res.send({
+//       error: false,
+//       message: "success",
+//       // token: token,
+//       token: req.session.token,
+//     });
+//   } else {
+//     res.send({
+//       error: true,
+//       message: "not login",
+//     });
+//   }
+// });
 
 app.post("/v1/register", (req, res) => {
   const username = req.body.username;
@@ -109,7 +109,7 @@ app.get("/v1/profile", varifytoken, (req, res) => {
         message: err,
       });
     } else {
-      console.log(tokenpayload);
+      // console.log(tokenpayload);
       res.json({
         error: false,
         message: "success",
@@ -148,7 +148,7 @@ app.post("/v1/login", (req, res) => {
           res.send({
             error: false,
             message: "success",
-            token: token,
+            token: "Bearer "+token,
           });
         } else {
           res.json({
