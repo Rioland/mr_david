@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 app.use(
   cors({
-    origin: [process.env.API_URL],
+    origin: [process.env.API_URL,process.env.LOCAL_URL],
     credentials: true,
     methods: ["POST", "GET", "PUT", "DELETE"],
   })
