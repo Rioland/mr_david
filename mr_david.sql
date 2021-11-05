@@ -40,9 +40,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `phone`, `password`, `name`) VALUES
-(1, 'rioland', '1888234', '123456', 'Adedamola Rioland'),
-(2, 'emmanuel', '12778363', '123456', 'Adedamola Emmanuel'),
-(3, 'yetty', '73823782', 'password', 'olaiya yetunde');
+('rioland', '1888234', '123456', 'Adedamola Rioland'),
+( 'emmanuel', '12778363', '123456', 'Adedamola Emmanuel'),
+( 'yetty', '73823782', 'password', 'olaiya yetunde');
 
 --
 -- Indexes for dumped tables
