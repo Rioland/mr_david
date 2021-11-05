@@ -193,6 +193,6 @@ app.get("/v1/allusers", varifytoken, (req, res) => {
   });
 });
 
-app.listen(9000, () => {
+app.listen(process.env.PORT || 9000, () => {
   console.log("am working");
 });
